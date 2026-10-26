@@ -17,10 +17,11 @@ Crawler/                  crawl_vietstock.py - crawl danh sách + meta bài viet
 EDA_clean/                làm sạch dữ liệu thô -> corpus tin doanh nghiệp
 call_firm_extractor.py    luật tìm mã CK / tên công ty trong 1 bài
 run_firm_extractor.py     chạy bộ tìm công ty cho cả corpus
-sentiment_label_method/
-  Common/                 tách từ, n-gram, stopword
-  Transfer_Learning/      PhoBERT: pretrain (E1), model (E2, E3), improve (đánh giá), inference
-  compute_inter_annotator_agreement.py
+sentiment_label_method/   PhoBERT
+  pretrain/               E1 - domain-adaptive pretraining
+  model/                  E2 (frozen probe), E3 (fine-tune), common.py
+  improve/                repeated CV Tune/Holdout, phương sai theo seed
+  inference/              chấm sentiment cả corpus
 data_news/                dữ liệu (không đưa lên git, trừ 3 bảng tra cứu nhỏ)
 docs/                     tài liệu kế hoạch
 ```
@@ -47,8 +48,7 @@ lưu chung của nhóm rồi đặt đúng chỗ:
 | `data_news/GT.csv`, `data_news/Đức_GT.csv` | nhãn tay của 2 người gán |
 | `data_news/data_tokenized/equity_news_tokenized_vncorenlp.parquet` | đầu vào PhoBERT |
 | `sentiment_label_method/Traditional_ML/Common/tune_holdout/*.csv` | chia Tune/Holdout cho `improve/` |
-| `sentiment_label_method/Seed_set_Prepare/final_seed/vietnamese-stopwords-dash.txt` | `Common/stopword_utils.py` |
-| `sentiment_label_method/Transfer_Learning/Model_Output/` | checkpoint PhoBERT (base, E1, E3) |
+| `sentiment_label_method/Model_Output/` | checkpoint PhoBERT (base, E1, E3) |
 
 ## Chạy
 
@@ -64,14 +64,11 @@ python EDA_clean/clean_content.py
 # Gắn công ty vào bài -> data_news/firm_extract/
 python run_firm_extractor.py --limit 2000      # bỏ --limit để chạy cả corpus
 
-# Độ đồng thuận giữa 2 người gán nhãn
-python sentiment_label_method/compute_inter_annotator_agreement.py
-
 # PhoBERT
-python sentiment_label_method/Transfer_Learning/pretrain/domain_adaptive_pretrain.py   # E1
-python sentiment_label_method/Transfer_Learning/model/frozen_feature_probe.py          # E2
-python sentiment_label_method/Transfer_Learning/model/finetune_phobert.py              # E3
-python sentiment_label_method/Transfer_Learning/inference/score_corpus_phobert.py      # chấm cả corpus
+python sentiment_label_method/pretrain/domain_adaptive_pretrain.py   # E1
+python sentiment_label_method/model/frozen_feature_probe.py          # E2
+python sentiment_label_method/model/finetune_phobert.py              # E3
+python sentiment_label_method/inference/score_corpus_phobert.py      # chấm cả corpus
 ```
 
 `EDA_clean/to_equity_news.py` đọc `clean_news_tokenized.parquet`, file này chưa có script nào trong repo

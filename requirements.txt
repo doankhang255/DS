@@ -5,9 +5,8 @@ numpy
 requests
 lxml
 
-# Gán nhãn, đánh giá
+# Đánh giá (StratifiedKFold, LogisticRegression cho E2)
 scikit-learn
-underthesea
 
 # PhoBERT (cài torch bản CUDA theo hướng dẫn ở pytorch.org nếu có GPU)
 torch

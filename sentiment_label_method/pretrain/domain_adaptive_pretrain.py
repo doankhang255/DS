@@ -29,8 +29,8 @@ so re-runs (e.g. trying more epochs) skip the preprocessing.
 
 Run (from the repo root, using the GPU venv)::
 
-    sentiment_label_method/Transfer_Learning/Model_Output/.venv-gpu/Scripts/python.exe \
-        sentiment_label_method/Transfer_Learning/pretrain/domain_adaptive_pretrain.py
+    sentiment_label_method/Model_Output/.venv-gpu/Scripts/python.exe \
+        sentiment_label_method/pretrain/domain_adaptive_pretrain.py
 
 Quick smoke test on 2000 docs / 1 epoch::
 
@@ -60,8 +60,8 @@ from transformers import (
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-TRANSFER_LEARNING_DIR = SCRIPT_DIR.parent
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+SENTIMENT_DIR = SCRIPT_DIR.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 INPUT_PARQUET = (
     PROJECT_ROOT
@@ -76,7 +76,7 @@ SENTENCES_COLUMN = "Tokenize_content_sentences"
 # - the right starting point for continued MLM pretraining. Already in the local
 # HF hub cache, so no download / network needed.
 BASE_MODEL_PATH = (
-    TRANSFER_LEARNING_DIR
+    SENTIMENT_DIR
     / "Model_Output"
     / "hub"
     / "models--vinai--phobert-base-v2"
@@ -95,9 +95,9 @@ BASE_MODEL_PATH = (
 # to reproduce the earlier (contaminated) run for comparison.
 GROUND_TRUTH_COMBINED_PATH = PROJECT_ROOT / "data_news" / "GT.csv"
 
-OUTPUT_DIR = TRANSFER_LEARNING_DIR / "Model_Output" / "phobert_domain_adapted"
-CACHE_DIR = TRANSFER_LEARNING_DIR / "Model_Output" / "phobert_dapt_cache"
-EVAL_CSV = TRANSFER_LEARNING_DIR / "data" / "phobert_dapt_eval.csv"
+OUTPUT_DIR = SENTIMENT_DIR / "Model_Output" / "phobert_domain_adapted"
+CACHE_DIR = SENTIMENT_DIR / "Model_Output" / "phobert_dapt_cache"
+EVAL_CSV = SENTIMENT_DIR / "data" / "phobert_dapt_eval.csv"
 
 # PhoBERT's positional table is 258 wide -> 256 usable tokens after the two
 # special tokens. Same length model_sentiment_v1/v2 and finetune_phobert.py use.

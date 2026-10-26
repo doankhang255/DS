@@ -25,8 +25,8 @@ outweighs the gain here), pinned host memory on CUDA.
 
 Run (from the repo root, using the GPU venv)::
 
-    sentiment_label_method/Transfer_Learning/Model_Output/.venv-gpu/Scripts/python.exe \
-        sentiment_label_method/Transfer_Learning/model/finetune_phobert.py
+    sentiment_label_method/Model_Output/.venv-gpu/Scripts/python.exe \
+        sentiment_label_method/model/finetune_phobert.py
 
 Quick smoke test (2 folds, 1 epoch, small batch)::
 
@@ -56,11 +56,11 @@ from transformers import (
 )
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from sentiment_label_method.Transfer_Learning.model.common import (
+from sentiment_label_method.model.common import (
     BASE_MODEL_PATH,
     DATA_DIR,
     MAX_LENGTH,

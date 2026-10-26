@@ -7,9 +7,9 @@ import pandas as pd
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
-TRANSFER_LEARNING_DIR = SCRIPT_DIR.parent
-PROJECT_ROOT = TRANSFER_LEARNING_DIR.parents[1]
-DATA_DIR = TRANSFER_LEARNING_DIR / "data"
+SENTIMENT_DIR = SCRIPT_DIR.parent
+PROJECT_ROOT = SENTIMENT_DIR.parent
+DATA_DIR = SENTIMENT_DIR / "data"
 
 
 # Combined ground truth (152 old + 447 new, 0 duplicate source_row_id) built in
@@ -53,7 +53,7 @@ HOLDOUT_SPLIT_PATH = TRADITIONAL_ML_TUNE_HOLDOUT_DIR / "ground_truth_holdout.csv
 # 126k unlabeled equity-news corpus (val perplexity 8.25 -> 3.82). E2 (frozen
 # feature probe) and E3 (fine-tune) both start from this instead of the raw base
 # or the wonrax e-commerce-review sentiment checkpoint.
-BASE_MODEL_PATH = TRANSFER_LEARNING_DIR / "Model_Output" / "phobert_domain_adapted"
+BASE_MODEL_PATH = SENTIMENT_DIR / "Model_Output" / "phobert_domain_adapted"
 
 TEXT_COLUMN = "text"
 LABEL_COLUMN = "sentiment"

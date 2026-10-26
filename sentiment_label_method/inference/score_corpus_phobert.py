@@ -27,7 +27,7 @@ vẹn, không phải sửa.
 
 Chạy (dùng venv gốc của repo, có torch/transformers)::
 
-    venv/bin/python sentiment_label_method/Transfer_Learning/inference/score_corpus_phobert.py
+    venv/bin/python sentiment_label_method/inference/score_corpus_phobert.py
 
 Smoke test nhanh (2000 bài đầu)::
 
@@ -47,11 +47,11 @@ import torch
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from sentiment_label_method.Transfer_Learning.model.common import (  # noqa: E402
+from sentiment_label_method.model.common import (  # noqa: E402
     MAX_LENGTH,
     SENTENCES_COLUMN,
     VALID_LABELS,
@@ -69,7 +69,6 @@ TOKENIZED_CORPUS_PATH = (
 MODEL_PATH = (
     PROJECT_ROOT
     / "sentiment_label_method"
-    / "Transfer_Learning"
     / "Model_Output"
     / "phobert_finetuned_ground_truth"
 )
