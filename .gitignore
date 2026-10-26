@@ -3,3 +3,10 @@
 *.csv
 *.json
 Model_Output
+__pycache__/
+.venv/
+
+# Bảng tra cứu nhỏ mà code cần để chạy -> vẫn đưa vào git
+!data_news/categories.csv
+!data_news/domain_norm.csv
+!data_news/vn_stock_symbols.csv

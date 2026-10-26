@@ -3,8 +3,10 @@ from pathlib import Path
 import re
 import pandas as pd
 
-INPUT_PATH = Path("data/equity_news.parquet")
-OUTPUT_PATH = Path("data/equity_news_clean_content.parquet")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_NEWS_DIR = PROJECT_ROOT / "data_news"
+INPUT_PATH = DATA_NEWS_DIR / "equity_news.parquet"
+OUTPUT_PATH = DATA_NEWS_DIR / "equity_news_clean_content.parquet"
 
 CONTENT_REMOVE_PHRASES = ("Khóa học online - Phân tích Ngành",)
 CONTENT_KEEP_START = ("DIC Corp hoàn tất mua thêm để nâng sở hữu công ty con DIC Hospitality lên 99,36% vốn")

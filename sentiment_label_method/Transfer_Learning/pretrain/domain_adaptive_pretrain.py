@@ -29,8 +29,8 @@ so re-runs (e.g. trying more epochs) skip the preprocessing.
 
 Run (from the repo root, using the GPU venv)::
 
-    News/Build_sentiment_label/Transfer_Learning/Model_Output/.venv-gpu/Scripts/python.exe \
-        News/Build_sentiment_label/Transfer_Learning/pretrain/domain_adaptive_pretrain.py
+    sentiment_label_method/Transfer_Learning/Model_Output/.venv-gpu/Scripts/python.exe \
+        sentiment_label_method/Transfer_Learning/pretrain/domain_adaptive_pretrain.py
 
 Quick smoke test on 2000 docs / 1 epoch::
 
@@ -61,7 +61,7 @@ from transformers import (
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 TRANSFER_LEARNING_DIR = SCRIPT_DIR.parent
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 INPUT_PARQUET = (
     PROJECT_ROOT

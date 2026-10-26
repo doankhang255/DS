@@ -6,29 +6,20 @@ import sys
 import pandas as pd
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-try:
-    from News.EDA_clean.EDA_raw_news import add_description_word_count
-    from News.EDA_clean.EDA_raw_news import build_year_before_2010_rows
-    from News.EDA_clean.EDA_raw_news import load_input_data
-    from News.EDA_clean.EDA_raw_news import NULL_LIKE_VALUES
-    from News.EDA_clean.EDA_raw_news import normalize_text_columns
-    from News.EDA_clean.EDA_raw_news import parse_publication_date_series
-    from News.EDA_clean.EDA_raw_news import TEXT_COLUMNS
-except ImportError:
-    from News.EDA_clean.EDA_raw_news import add_description_word_count
-    from News.EDA_clean.EDA_raw_news import build_year_before_2010_rows
-    from News.EDA_clean.EDA_raw_news import load_input_data
-    from News.EDA_clean.EDA_raw_news import NULL_LIKE_VALUES
-    from News.EDA_clean.EDA_raw_news import normalize_text_columns
-    from News.EDA_clean.EDA_raw_news import parse_publication_date_series
-    from News.EDA_clean.EDA_raw_news import TEXT_COLUMNS
+from EDA_clean.EDA_raw_news import add_description_word_count
+from EDA_clean.EDA_raw_news import build_year_before_2010_rows
+from EDA_clean.EDA_raw_news import load_input_data
+from EDA_clean.EDA_raw_news import NULL_LIKE_VALUES
+from EDA_clean.EDA_raw_news import normalize_text_columns
+from EDA_clean.EDA_raw_news import parse_publication_date_series
+from EDA_clean.EDA_raw_news import TEXT_COLUMNS
 
 
-DATA_NEWS_DIR = PROJECT_ROOT / "data_News"
+DATA_NEWS_DIR = PROJECT_ROOT / "data_news"
 INPUT_PATH = DATA_NEWS_DIR / "dataset_news.parquet"
 OUTPUT_PATH = DATA_NEWS_DIR / "clean_news.parquet"
 

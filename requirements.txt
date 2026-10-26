@@ -1,0 +1,15 @@
+# Dữ liệu, crawler, làm sạch
+pandas
+pyarrow
+numpy
+requests
+lxml
+
+# Gán nhãn, đánh giá
+scikit-learn
+underthesea
+
+# PhoBERT (cài torch bản CUDA theo hướng dẫn ở pytorch.org nếu có GPU)
+torch
+transformers
+datasets

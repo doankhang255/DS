@@ -32,7 +32,7 @@ from pathlib import Path
 import pandas as pd
 from sklearn.metrics import cohen_kappa_score, confusion_matrix
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_NEWS_DIR = PROJECT_ROOT / "data_news"
 
 GROUND_TRUTH_PATH = DATA_NEWS_DIR / "GT.csv"

@@ -3,8 +3,10 @@ import re
 import pandas as pd
 from underthesea import sent_tokenize, word_tokenize
 
-INPUT_PATH = Path("data/equity_news_clean_content.parquet")
-OUTPUT_PATH = Path("data/equity_news_tokenized.parquet")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DATA_NEWS_DIR = PROJECT_ROOT / "data_news"
+INPUT_PATH = DATA_NEWS_DIR / "equity_news_clean_content.parquet"
+OUTPUT_PATH = DATA_NEWS_DIR / "data_tokenized" / "equity_news_tokenized_underthesea.parquet"
 
 TEXT_COLUMN =  "content" 
 TOKENIZED_COLUMN = "Tokenize_content"
@@ -62,6 +64,7 @@ def load_and_tokenize_equity_news(path: Path = INPUT_PATH) -> pd.DataFrame:
 
 def main() -> None:
     df = load_and_tokenize_equity_news(INPUT_PATH)
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(OUTPUT_PATH, index=False)
     print(f"Saved tokenized dataframe to: {OUTPUT_PATH}")
     print("Rows:", len(df))

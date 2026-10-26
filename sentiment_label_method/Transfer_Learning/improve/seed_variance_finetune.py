@@ -13,7 +13,7 @@ kiem tra roi, la 1 cau hoi khac).
 Chay (dung venv GPU cua repo)::
 
     .../Model_Output/.venv-gpu/Scripts/python.exe \
-        News/Build_sentiment_label/Transfer_Learning/improve/seed_variance_finetune.py
+        sentiment_label_method/Transfer_Learning/improve/seed_variance_finetune.py
 """
 
 from __future__ import annotations
@@ -30,18 +30,18 @@ import torch
 from sklearn.model_selection import StratifiedKFold
 from transformers import AutoTokenizer, DataCollatorWithPadding
 
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from News.Build_sentiment_label.Transfer_Learning.model.common import (  # noqa: E402
+from sentiment_label_method.Transfer_Learning.model.common import (  # noqa: E402
     BASE_MODEL_PATH,
     VALID_LABELS,
     compute_metrics_table,
     encode_labels,
     load_ground_truth,
 )
-from News.Build_sentiment_label.Transfer_Learning.model.finetune_phobert import (  # noqa: E402
+from sentiment_label_method.Transfer_Learning.model.finetune_phobert import (  # noqa: E402
     WeightedLossTrainer,
     build_chunk_frame,
     build_classifier,

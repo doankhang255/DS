@@ -27,7 +27,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from DS.call_firm_extractor import extract_symbols_offline
+from call_firm_extractor import extract_symbols_offline
 
 ROOT = Path(__file__).resolve().parent
 INPUT_PATH = ROOT / "data_news" / "equity_news_clean_content.parquet"

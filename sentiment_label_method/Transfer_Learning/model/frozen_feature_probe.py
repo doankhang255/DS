@@ -22,8 +22,8 @@ has to beat.
 
 Run (from the repo root, using the GPU venv)::
 
-    News/Build_sentiment_label/Transfer_Learning/Model_Output/.venv-gpu/Scripts/python.exe \
-        News/Build_sentiment_label/Transfer_Learning/model/frozen_feature_probe.py
+    sentiment_label_method/Transfer_Learning/Model_Output/.venv-gpu/Scripts/python.exe \
+        sentiment_label_method/Transfer_Learning/model/frozen_feature_probe.py
 
 The 152 x 768 embedding matrix is cached to
 ``Model_Output/phobert_frozen_features.parquet`` keyed (in the parquet's own
@@ -52,11 +52,11 @@ from sklearn.model_selection import StratifiedKFold
 from transformers import AutoModel, AutoTokenizer
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[4]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from News.Build_sentiment_label.Transfer_Learning.model.common import (
+from sentiment_label_method.Transfer_Learning.model.common import (
     BASE_MODEL_PATH,
     DATA_DIR,
     MAX_LENGTH,

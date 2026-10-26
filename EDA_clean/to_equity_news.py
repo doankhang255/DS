@@ -5,10 +5,12 @@ from pathlib import Path
 import pandas as pd
 
 
-INPUT_PATH = Path("data/clean_news_tokenized.parquet")
-CATEGORIES_PATH = Path("data/categories.csv")
-DOMAIN_NORM_PATH = Path("data/domain_norm.csv")
-OUTPUT_PATH = Path("data/equity_news.parquet")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_NEWS_DIR = PROJECT_ROOT / "data_news"
+INPUT_PATH = DATA_NEWS_DIR / "clean_news_tokenized.parquet"
+CATEGORIES_PATH = DATA_NEWS_DIR / "categories.csv"
+DOMAIN_NORM_PATH = DATA_NEWS_DIR / "domain_norm.csv"
+OUTPUT_PATH = DATA_NEWS_DIR / "equity_news.parquet"
 
 
 def normalize_for_match(series: pd.Series) -> pd.Series:

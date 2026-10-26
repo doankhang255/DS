@@ -7,13 +7,13 @@ import sys
 import pandas as pd
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from News.Build_sentiment_label.Common.matrix_csr_utils import NGRAM_SEPARATOR
-from News.Build_sentiment_label.Common.stopword_utils import has_stopword_boundary
-from News.Build_sentiment_label.Common.tf_df_utils import (
+from sentiment_label_method.Common.matrix_csr_utils import NGRAM_SEPARATOR
+from sentiment_label_method.Common.stopword_utils import has_stopword_boundary
+from sentiment_label_method.Common.tf_df_utils import (
     add_candidate_statistics,
     infer_total_documents,
     split_by_mask,

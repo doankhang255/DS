@@ -8,8 +8,8 @@ Mọi file mới đều tính từ bản sao lưu, nên lần chạy bị dừng
 đã sắp rồi thì tự dừng. review_extract_rows_5000_5499.csv không bị đụng tới: cột row trong
 đó vẫn là số thứ tự cũ, tra sang số mới bằng source_row_id_map_20261020.csv.
 
-    python News/EDA_clean/reorder_corpus_by_date.py            # chỉ kiểm tra
-    python News/EDA_clean/reorder_corpus_by_date.py --apply    # ghi thật
+    python EDA_clean/reorder_corpus_by_date.py            # chỉ kiểm tra
+    python EDA_clean/reorder_corpus_by_date.py --apply    # ghi thật
 """
 from __future__ import annotations
 
@@ -26,11 +26,11 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[1]
 BACKUP = ROOT / "data_news" / "backup_before_reorder_20261020"
 MAP_PATH = ROOT / "data_news" / "source_row_id_map_20261020.csv"
 CORPUS = "data_news/equity_news_clean_content.parquet"
-BSL = "News/Build_sentiment_label"
+BSL = "sentiment_label_method"
 ALIGNED = [
     "data_news/data_tokenized/equity_news_tokenized_underthesea.parquet",
     "data_news/data_tokenized/equity_news_tokenized_vncorenlp.parquet",

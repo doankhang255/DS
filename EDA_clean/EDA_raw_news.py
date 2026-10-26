@@ -4,7 +4,9 @@ import re
 from typing import Iterable
 import pandas as pd
 
-INPUT_PATH = Path("data/dataset_news.parquet")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_NEWS_DIR = PROJECT_ROOT / "data_news"
+INPUT_PATH = DATA_NEWS_DIR / "dataset_news.parquet"
 
 TEXT_COLUMNS = [
     "link",

@@ -8,8 +8,8 @@ quét 5 kênh cha theo từng tháng. `category` lấy từ nhãn kênh con hi�
 danh sách (VD "Chính sách", "Cổ phiếu"). Thông tin bài lấy từ thẻ meta của trang bài.
 
 Ví dụ (từ thư mục gốc dự án):
-    .venv\\Scripts\\python.exe News\\Crawler\\crawl_vietstock.py --start 2012-03-01 --end 2012-03-31 --max-articles 20
-    .venv\\Scripts\\python.exe News\\Crawler\\crawl_vietstock.py            # 2010-01-01 .. 2023-12-31, chạy tiếp được
+    .venv\\Scripts\\python.exe Crawler\\crawl_vietstock.py --start 2012-03-01 --end 2012-03-31 --max-articles 20
+    .venv\\Scripts\\python.exe Crawler\\crawl_vietstock.py            # 2010-01-01 .. hôm nay, chạy tiếp được
 """
 
 from __future__ import annotations
@@ -261,7 +261,7 @@ def export_parquet(jsonl_path: Path, parquet_path: Path) -> int:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--start", type=date.fromisoformat, default=date(2010, 1, 1))
-    parser.add_argument("--end", type=date.fromisoformat, default=date(2023, 12, 31))
+    parser.add_argument("--end", type=date.fromisoformat, default=date.today())
     parser.add_argument("--max-articles", type=int, default=None, help="dung sau khi lay du N bai moi (de chay thu)")
     parser.add_argument("--delay", type=float, default=1.0, help="khoang cach toi thieu (giay) giua 2 request")
     parser.add_argument("--workers", type=int, default=1, help="so luong tai bai song song (van chiu --delay chung)")

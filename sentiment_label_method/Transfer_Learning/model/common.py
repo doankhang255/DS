@@ -8,7 +8,7 @@ import pandas as pd
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 TRANSFER_LEARNING_DIR = SCRIPT_DIR.parent
-PROJECT_ROOT = TRANSFER_LEARNING_DIR.parents[2]
+PROJECT_ROOT = TRANSFER_LEARNING_DIR.parents[1]
 DATA_DIR = TRANSFER_LEARNING_DIR / "data"
 
 
@@ -41,8 +41,7 @@ SENTENCES_COLUMN = "Tokenize_content_sentences"
 # cross-method comparison (paired bootstrap / McNemar) on the Holdout rows.
 TRADITIONAL_ML_TUNE_HOLDOUT_DIR = (
     PROJECT_ROOT
-    / "News"
-    / "Build_sentiment_label"
+    / "sentiment_label_method"
     / "Traditional_ML"
     / "Common"
     / "tune_holdout"
