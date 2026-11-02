@@ -54,7 +54,10 @@ lưu chung của nhóm rồi đặt đúng chỗ:
 
 ```bash
 # Crawl vietstock (mặc định 2010-01-01 -> hôm nay, chạy tiếp được khi bị ngắt)
-python Crawler/crawl_vietstock.py --start 2024-01-01 --max-articles 20
+# -> Crawler/data/vietstock_equity_news_clean_content.parquet (cùng format equity_news_clean_content)
+python Crawler/crawl_vietstock.py
+python Crawler/crawl_vietstock.py --watch-hours 24      # crawl xong thì mỗi ngày cập nhật bài mới
+python Crawler/crawl_vietstock.py --start 2024-01-01 --max-articles 20   # chạy thử
 
 # Làm sạch: dataset_news -> clean_news -> equity_news -> equity_news_clean_content
 python EDA_clean/news_clean.py
