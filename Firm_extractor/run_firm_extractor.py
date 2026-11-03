@@ -7,13 +7,14 @@ Cuối cùng kiểm tra từng chunk đủ đúng các bài của nó rồi gộ
 
 - firm_symbols.csv: bài có ít nhất 1 mã. Cột giống first100_symbols_offline.csv:
   row (= source_row_id, số thứ tự dòng trong equity_news_clean_content.parquet),
-  title, link, matched_by, evidence, symbol; mỗi mã 1 dòng.
+  title, link, matched_by, evidence, symbol, position (tiêu đề / sapo / nội dung), mentions
+  (số lần công ty được nhắc); mỗi mã 1 dòng.
 - firm_unmatched.csv: bài bị loại, 1 bài 1 dòng, để người review: row, publication_date,
   title, link, reason, evidence, description. reason = "không khớp mã nào", hoặc bài nhắc
   tên dùng chung cho nhiều mã ("CTCP Nam Việt" = ANV/NAV) mà không ghi mã nào trong số
-  đó (evidence ghi tên và các mã).
+  đó và cũng không có mã nào khác (evidence ghi tên và các mã).
 
-    python run_firm_extractor.py [--chunk-size 5000] [--workers 4]
+    python Firm_extractor/run_firm_extractor.py [--chunk-size 5000] [--workers 4]
 """
 
 from __future__ import annotations
@@ -29,10 +30,10 @@ import pandas as pd
 
 from call_firm_extractor import extract_symbols_offline
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(__file__).resolve().parent.parent
 INPUT_PATH = ROOT / "data_news" / "equity_news_clean_content.parquet"
 OUT_DIR = ROOT / "data_news" / "firm_extract"
-COLUMNS = ["row", "title", "link", "matched_by", "evidence", "symbol"]
+COLUMNS = ["row", "title", "link", "matched_by", "evidence", "symbol", "position", "mentions"]
 
 
 def chunk_path(chunk_dir: Path, start: int, end: int) -> Path:
@@ -58,7 +59,9 @@ def process_chunk(articles: pd.DataFrame, path: Path) -> tuple[Path, int, int]:
             records.append({"row": row, "title": title, "link": link})
         for item in found:
             records.append({"row": row, "title": title, "link": link, **item})
-    write_csv_atomic(pd.DataFrame(records, columns=COLUMNS), path)
+    df = pd.DataFrame(records, columns=COLUMNS)
+    df["mentions"] = df["mentions"].astype("Int64")  # bài không có mã để trống, không thành "6.0"
+    write_csv_atomic(df, path)
     return path, len(articles), len(records)
 
 

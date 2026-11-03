@@ -10,3 +10,4 @@ __pycache__/
 !data_news/categories.csv
 !data_news/domain_norm.csv
 !data_news/vn_stock_symbols.csv
+*.txt

@@ -1,0 +1,204 @@
+@startuml firm_equity_pipeline
+' Luồng tách công ty (call_firm_extractor.py + run_firm_extractor.py) và lọc equity news
+' (filter_equity_news.py). Render: plantuml -tsvg docs/firm_equity_pipeline.puml
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ActivityBackgroundColor #FDFDFD
+skinparam ActivityBorderColor #555555
+skinparam ActivityDiamondBackgroundColor #FFF6D9
+skinparam PartitionBorderColor #888888
+skinparam NoteBackgroundColor #EEF5FF
+skinparam ArrowColor #444444
+skinparam wrapWidth 330
+skinparam maxMessageSize 330
+
+title Luồng tách tên công ty và lọc equity news (bộ thử 126.576 bài)
+
+start
+
+:**Đầu vào**
+* data_news/equity_news_clean_content.parquet
+  (title, description = sapo, content, domain_norm, category)
+* data_news/vn_stock_symbols.csv
+  (symbol, organ_name, old_names, brand_name, exchange, status);
+
+partition "PHẦN 0 - Dựng danh sách tên (load_symbols, name_patterns - chạy 1 lần)" {
+  :Mỗi mã lấy **tên chính thức** (organ_name) + **tên cũ** (old_names),
+  nhiều tên cách nhau "|";
+  :**Chuẩn hoá tên** (normalize_name)
+  * viết thường, NFC, "&" -> "và", dấu thanh về 1 kiểu (thuỷ = thủy)
+  * viết tắt -> đầy đủ: tv, tm, dv, sx, xnk, xd, đt, pt, kd, bđs, ctck, ck, nh, bh,
+    tct, tp, hcm, tphcm, vn, tkv -> vinacomin...
+  * loại hình về 1 dạng: công ty cổ phần -> ctcp, tổng công ty cổ phần -> tổng ctcp,
+    ngân hàng thương mại cổ phần -> ngân hàng tmcp, công ty -> cty;
+  :**Tách lõi tên** (name_core): bỏ loại hình đầu/cuối
+  "ctcp tập đoàn hòa phát" -> "hòa phát"
+  giữ chữ "tổng" / "ngân hàng" trong lõi
+  (DIG "tổng ... xây dựng" khác ING; MSB "ngân hàng hàng hải" khác MVN);
+  :**Tên phụ** (alias): lõi bỏ chữ "tổng" ("tổng idico" -> "idico"),
+  chỉ khi không trùng lõi công ty khác.
+  Ngân hàng KHÔNG có tên phụ (không viết "Cty Hàng hải" cho MSB);
+  :**Gộp trùng** (build_index)
+  * tên/lõi chỉ thuộc 1 mã -> giữ
+  * nhiều mã có đúng cùng tên chính thức (CTCP Nam Việt = ANV, NAV) -> giữ cả nhóm = **tên dùng chung**
+  * lõi trùng giữa các công ty tên khác nhau -> bỏ, không đoán
+  * nhóm cùng công ty (ANI = SIC) -> tên nào cũng ra cả nhóm;
+  :**Các mẫu tên được nhận** (xếp dài trước để khớp dài nhất)
+  # tên đầy đủ đã chuẩn hoá
+  # loại hình + lõi: "ctcp/cty/tập đoàn + lõi"
+     ("tổng ctcp/tổng cty + lõi" nếu lõi có "tổng", "ngân hàng (tmcp) + lõi" nếu là ngân hàng)
+  # loại hình + tên phụ: "ctcp/cty/tập đoàn idico"
+  # thương hiệu 1 chữ: lõi 1 chữ không dấu, từ 5 ký tự (idico, viglacera),
+     chỉ từ tên HIỆN TẠI, trừ trang/green/sunshine/mirae/hanel/alphanam
+  # tên ngắn công ty chứng khoán: "chứng khoán + X" (Chứng khoán Nhất Việt = VFS)
+  # thương hiệu ở cột brand_name (Techcombank, Thế giới Di động, Sabeco...):
+     tuyển tay + tra trên web, đã lọc trên kho tin;
+}
+
+partition "run_firm_extractor.py" {
+  :Chia corpus thành chunk 5.000 bài (data_news/firm_extract/chunks/),
+  chạy song song, chạy tiếp được khi bị ngắt;
+  :Mỗi bài: **text = tiêu đề + sapo + nội dung**;
+}
+
+fork
+  partition "PHẦN 1 - Mã chứng khoán viết trong bài (find_symbols_in_text)" {
+    :**Luật 1.2** - tìm chuỗi 3 ký tự viết hoa [A-Z][A-Z0-9]{2},
+    không dính chữ/dấu chấm 2 bên, có trong danh sách mã.
+    Xét 20 ký tự trước/sau mã;
+    if (**Luật 1.4** - ngữ cảnh không phải mã?\n* "TP." / "Tp" ngay trước (TP. HCM)\n* VND sau số/tỷ/triệu, hoặc "VND/"\n* số hiệu văn bản: "64/2010/TT-BTC", "TT-", "QĐ-", "NĐ-"...\n* PGS ngay trước TS / TSKH (PGS.TS)\n* GAS ngay trước " D" / " SOUTH" (PV GAS D)\n* VNM ngay trước " ETF", hoặc sau "ETF (") then (có)
+      :bỏ, không phải mã; <<#FFE0E0>>
+      detach
+    endif
+    if (**Luật 1.3a** - ngay trước là tên sàn\n"HOSE:" / "HSX:" / "HNX:" / "UPCoM:" (không phân biệt hoa thường)?) then (có)
+      :kiểu **"sàn"** (bằng chứng chắc chắn); <<#E2F5E2>>
+    elseif (**Luật 1.3b** - ngay trước là\n"Chứng khoán" / "CTCK" (không phải "mã chứng khoán")?) then (có)
+      if (mã là của công ty chứng khoán?) then (có)
+        :kiểu **"chứng khoán"**
+        ("Chứng khoán VFS"); <<#E2F5E2>>
+      else (không)
+        :bỏ ("CTCK FPT" là FTS, không phải FPT); <<#FFE0E0>>
+        detach
+      endif
+    elseif (**Luật 1.1** - mã dễ nhầm?\n* AMBIGUOUS_SYMBOLS: trùng từ viết tắt / cơ quan / tên khác\n  (USD, CEO, BTC, SBV, SSC, TCT, TOP, IFC, VRG, MTV...)\n* AMBIGUOUS_IN_ARTICLE: bài có cụm chữ của tổ chức trùng mã\n  (VNM - "VNM ETF", VNL/VNI - VinaCapital, BCG - Boston Consulting,\n  MSB - Masan Beverage)) then (có)
+      :kiểu **"mơ hồ"**
+      (chờ xác nhận ở PHẦN 3); <<#FFF6D9>>
+    else (không)
+      :kiểu **"trơn"**; <<#E2F5E2>>
+    endif
+  }
+fork again
+  partition "PHẦN 2 - Tên công ty viết trong bài (find_names_in_text)" {
+    :Chuẩn hoá bài như tên trong danh sách (name_words),
+    giữ thông tin từng chữ: viết hoa, viết liền chữ trước, là mã CK, có "(" trước;
+    :Quét từ trái sang phải, tại mỗi vị trí thử mẫu **dài nhất** trước;
+    if (Chặn theo chữ đứng trước?\n* ngay sau "tổng" mà mẫu không bắt đầu bằng "tổng"\n  ("Tổng CTCP Đầu tư và Phát triển Xây dựng" không phải ING)\n* tên ngắn CTCK sau dịch/ký/ban/trường/sàn/tư\n  ("Sở Giao dịch Chứng khoán TP.HCM" không phải HCM)\n* thương hiệu sau "khoán"/"hiểm" mà công ty không cùng ngành\n  ("Chứng khoán BIDV" không phải BID)) then (có)
+      :thử mẫu khác / vị trí kế tiếp;
+    elseif (Tên còn tiếp tục?\n* chữ ngay sau là số ("CTCP Sông Đà 25" không phải "CTCP Sông Đà")\n* chữ ngay sau viết hoa, viết liền, không phải mã\n  ("CTCP Thủy sản Cửu Long An Giang" không phải CLP)\n  - trừ thương hiệu và chữ đuôi group/holdings/jsc/corp...) then (có)
+      :bỏ tên này (là tên dài hơn không có trong danh sách); <<#FFE0E0>>
+    elseif (Ngay sau có ngoặc **tên sàn + mã của công ty khác**?\n"CTCP Chứng khoán Sài Gòn (HNX: SHS)" không phải SSI\n"Idico (HOSE: UIC)" không phải IDC\n(ngoặc không có tên sàn như "(BSC)", "(VRG)" là tên viết tắt - không tính)) then (có)
+      :bỏ tên này; <<#FFE0E0>>
+    else (không)
+      :**khớp tên** -> (các mã, tên đã khớp), đánh dấu các chữ đã dùng; <<#E2F5E2>>
+    endif
+    :**Tên rút gọn** (find_short_names) - cho các cụm CHƯA khớp:
+    cụm = chữ loại hình (ctcp / cty / tổng cty / ngân hàng / tập đoàn)
+    + các chữ viết hoa liền nhau (chữ thường chỉ được kẹp giữa 2 chữ hoa);
+    if (Cụm hợp lệ?\n* chữ đầu viết hoa, từ 2 chữ\n* có chữ riêng (không thuộc chữ chung của > 0,5% số tên)\n* không có TNHH / MTV\n* không dừng trước 1 chữ hoa viết liền\n  ("Giám định Vinacontrol" không phải Giám định TKV - VQC)\n* không có ngoặc tên sàn + mã công ty khác ngay sau) then (có)
+      if (Cụm là tên chính thức bị bỏ bớt chữ (giữ thứ tự) của đúng 1 công ty,\nchữ bỏ đúng vị trí?\n* đầu tên: chữ chung về ngành ("Xuất nhập khẩu Thủy sản Cửu Long An Giang")\n* giữa tên: vinacomin / vicem / vnsteel / petrolimex ("Xi măng Vicem Hoàng Mai")\n* cuối tên: các chữ trên + việt / nam ("Than Hà Tu - Vinacomin")\n* không bỏ số (Nhơn Trạch 2), không cắt cụt cuối ("Đại lý Hàng")) then (có)
+        :khớp **"rút gọn: <cụm>"**; <<#E2F5E2>>
+      else (không)
+        :không đoán;
+      endif
+    else (không)
+      :bỏ qua;
+    endif
+  }
+end fork
+
+partition "PHẦN 3 - Kết hợp mã và tên của 1 bài (extract_symbols_offline)" {
+  :Chia tên đã khớp:
+  * **tên công ty**: ra đúng 1 mã (hoặc nhóm cùng công ty)
+  * **tên dùng chung**: ra nhiều mã (CTCP Nam Việt = ANV/NAV) - không tự ra mã;
+  :**Tập xác nhận** = mã kiểu "sàn"/"chứng khoán"
+  + mã của mọi tên đã khớp (kể cả tên dùng chung: "CTCP Nam Việt (NAV)" -> NAV);
+  :1. **Mã CK** trước (bằng chứng ưu tiên kiểu "sàn"):
+     nhận "trơn"/"sàn"/"chứng khoán"; "mơ hồ" chỉ nhận khi có trong tập xác nhận
+  2. **Tên** cho công ty chưa có mã: matched_by =
+     "thương hiệu" / "tên rút gọn" / "tên công ty"
+  3. Nhóm cùng công ty: khớp SIC thì thêm ANI ("cùng công ty");
+  if (Bài còn ít nhất 1 mã?) then (có)
+    :Mỗi mã thêm
+    * **position**: chỗ xuất hiện đầu tiên - "tiêu đề" / "sapo" / "nội dung"
+    * **mentions**: số lần mã + tên của công ty được nhắc trong cả bài;
+    :-> **firm_symbols.csv**
+    (row, title, link, matched_by, evidence, symbol, position, mentions)
+    hiện tại: 108.292 bài có mã, 246.433 cặp bài-mã; <<#E2F5E2>>
+  else (không)
+    if (Bài có nhắc tên dùng chung?) then (có)
+      :-> firm_unmatched.csv
+      "loại: tên dùng chung nhiều mã, bài không ghi mã"; <<#FFE0E0>>
+    else (không)
+      :-> firm_unmatched.csv "không khớp mã nào"
+      (18.281 bài); <<#FFE0E0>>
+    endif
+  endif
+}
+
+partition "filter_equity_news.py - Lọc equity news (mỗi bài 1 dòng)" {
+  :Mỗi bài tính:
+  * **finance_hits**: số từ tài chính doanh nghiệp trong cả bài
+    (lợi nhuận, doanh thu, cổ tức, cổ đông, phát hành, niêm yết, ĐHĐCĐ, HĐQT, BCTC...)
+  * **market**: tiêu đề/sapo có từ thị trường cổ phiếu
+    (VN-Index, HNX-Index, VN30, chứng khoán, cổ phiếu, khối ngoại, ETF, mua/bán ròng, tự doanh...)
+  * **section**: (báo, chuyên mục) trong SECTION_PROFILES -> "rộng", còn lại "hẹp"
+    (rộng: diendandoanhnghiep/Doanh nghiệp, dantri/Kinh doanh, stockbiz/Kinh tế,
+    vietstock/Trái phiếu, Chính sách, Phân tích);
+  if (Bài không có mã nào?) then (đúng)
+    if (market?) then (có)
+      :**tin thị trường chung**;
+    else (không)
+      :**không có công ty niêm yết**;
+    endif
+  elseif (Không mã nào ở tiêu đề/sapo\nvà có từ 5 mã trở lên?) then (đúng)
+    :**tin tổng hợp nhiều mã**
+    (điểm tin, danh sách giao dịch nội bộ);
+  elseif (Có công ty chính? (xét lần lượt)\n1. các mã ở tiêu đề\n2. không có thì các mã ở sapo\n3. không có nữa thì mã được nhắc nhiều nhất,\n   khi mentions lớn nhất từ 2 và finance_hits từ 2) then (có)
+    :công ty phụ = mã khác có mentions từ 2
+    và từ 0,5 x mentions của công ty chính
+    ("Pomina..." POM 29, HPG 3 -> chỉ POM);
+    :**tin công ty** -> subject_symbols = chính + phụ; <<#E2F5E2>>
+  elseif (market?) then (có)
+    :**tin thị trường chung**
+    (có mã nhưng không mã nào là chủ thể);
+  else (không)
+    :**nhắc qua**
+    (mã chỉ được nhắc qua trong thân bài);
+  endif
+  if (Không phải tin công ty và\n* nội dung ngắn (dưới 300 ký tự) chỉ có "danh sách các mã tăng..."\n* hoặc tiêu đề quảng cáo (khóa học, khai giảng, ưu đãi học phí, lớp học)?) then (có)
+    :đổi thành **nội dung rỗng** / **quảng cáo**;
+  endif
+  if (is_equity?\n* tin công ty / tin tổng hợp nhiều mã / tin thị trường chung: ở mọi mục\n* nhắc qua: chỉ khi ở mục "hẹp") then (đúng)
+    :is_equity = True; <<#E2F5E2>>
+  else (sai)
+    :is_equity = False; <<#FFE0E0>>
+  endif
+  :-> **equity_news_articles.csv**
+  (row, publication_date, domain_norm, category, section, article_type, is_equity,
+  n_symbols, subject_symbols, symbols, title, link)
+  hiện tại: 111.026 / 126.576 bài là equity news;
+}
+
+:**Sang bước sentiment**: chấm từng cặp (bài, công ty chủ thể) trong subject_symbols
+(tin thị trường chung không có công ty chủ thể - để dùng cho việc khác);
+
+stop
+
+legend right
+  |= Màu |= Ý nghĩa |
+  |<#E2F5E2> xanh | nhận / giữ |
+  |<#FFF6D9> vàng | chờ xác nhận |
+  |<#FFE0E0> đỏ | bỏ / loại |
+endlegend
+
+@enduml

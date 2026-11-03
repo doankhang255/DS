@@ -14,9 +14,17 @@ Kế hoạch và phân công: [docs/FinNews_Tracker_Ke_hoach_trien_khai.pdf](doc
 
 ```
 Crawler/                  crawl_vietstock.py - crawl danh sách + meta bài vietstock.vn
+                          crawl_vietstock_ver2.py - equity news vietstock (13 kênh con): meta trước, nội dung sau
+                          crawl_baodautu.py - baodautu.vn (Sức khỏe doanh nghiệp, Đầu tư tài chính), cùng cách làm
+                          crawl_stockbiz.py - stockbiz.vn (Doanh nghiệp, Thị trường, Tài chính), từ 09/2021;
+                            robots.txt: ai-train=no - KHÔNG dùng nội dung để train / fine-tune mô hình
+                          crawl_store.py - lưu parquet + csv mẫu 1000 bài, duyệt danh sách phân trang
+                            và phase content dùng chung
+                          (diendandoanhnghiep.vn chặn crawler - trả 403 "Access Denied" - nên không có crawler)
 EDA_clean/                làm sạch dữ liệu thô -> corpus tin doanh nghiệp
-call_firm_extractor.py    luật tìm mã CK / tên công ty trong 1 bài
+call_firm_extractor.py    luật tìm mã CK / tên công ty / thương hiệu trong 1 bài
 run_firm_extractor.py     chạy bộ tìm công ty cho cả corpus
+filter_equity_news.py     lọc equity news theo profile từng báo + chuyên mục (sau bước gắn công ty)
 sentiment_label_method/   PhoBERT
   pretrain/               E1 - domain-adaptive pretraining
   model/                  E2 (frozen probe), E3 (fine-tune), common.py
@@ -39,8 +47,8 @@ không phụ thuộc thư mục đang đứng.
 
 ## Dữ liệu
 
-Git chỉ chứa `categories.csv`, `domain_norm.csv`, `vn_stock_symbols.csv`. Các file còn lại lấy từ nơi
-lưu chung của nhóm rồi đặt đúng chỗ:
+Git chỉ chứa `categories.csv`, `domain_norm.csv`, `vn_stock_symbols.csv` (mã, tên công ty chính
+thức, tên cũ trước khi đổi tên tìm từ kho tin, tên thương hiệu (tuyển tay và tra trên web, đã lọc trên kho tin), sàn, trạng thái). Các file còn lại lấy từ nơi lưu chung của nhóm rồi đặt đúng chỗ:
 
 | File | Dùng cho |
 |---|---|
@@ -56,13 +64,27 @@ lưu chung của nhóm rồi đặt đúng chỗ:
 # Crawl vietstock (mặc định 2010-01-01 -> hôm nay, chạy tiếp được khi bị ngắt)
 python Crawler/crawl_vietstock.py --start 2024-01-01 --max-articles 20
 
+# Crawl equity news, 2 phase (chạy tiếp được khi bị ngắt), dữ liệu parquet trong Crawler/data/<trang>/:
+# 1. meta: tiêu đề, ngày, chuyên mục, sapo từ trang danh sách -> meta.parquet + meta_sample_1000.csv
+python Crawler/crawl_vietstock_ver2.py --phase meta --start 2010-01-01 --end 2015-12-31 --workers 4 --delay 0.5
+# 2. content: nội dung, tác giả, nguồn từ trang bài -> news.parquet + news_sample_1000.csv (1000 bài ngẫu nhiên để kiểm tra)
+python Crawler/crawl_vietstock_ver2.py --phase content --start 2010-01-01 --end 2010-12-31 --workers 4 --delay 0.5
+# các trang khác: cùng tham số (baodautu có từ 10/2019, stockbiz từ 09/2021)
+python Crawler/crawl_baodautu.py --phase meta --start 2019-01-01
+python Crawler/crawl_baodautu.py --phase content --workers 4
+python Crawler/crawl_stockbiz.py --phase meta --start 2021-09-01
+python Crawler/crawl_stockbiz.py --phase content --workers 4
+
 # Làm sạch: dataset_news -> clean_news -> equity_news -> equity_news_clean_content
 python EDA_clean/news_clean.py
 python EDA_clean/to_equity_news.py
 python EDA_clean/clean_content.py
 
-# Gắn công ty vào bài -> data_news/firm_extract/
+# Gắn công ty vào bài -> data_news/firm_extract/ (đổi luật/danh sách thì xoá firm_extract/chunks trước)
 python run_firm_extractor.py --limit 2000      # bỏ --limit để chạy cả corpus
+
+# Lọc equity news -> data_news/firm_extract/equity_news_articles.csv (cần firm_symbols.csv cả corpus)
+python filter_equity_news.py
 
 # PhoBERT
 python sentiment_label_method/pretrain/domain_adaptive_pretrain.py   # E1
