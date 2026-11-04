@@ -4,8 +4,6 @@ Các nghiên cứu quốc tế xác nhận hai bước chính của FinNews Trac
 - **Phần 1 – Lọc tin theo công ty:** tiêu chí để coi một bài là tin của một công ty (equity / firm-specific news).
 - **Phần 2 – Gắn tên công ty với mã:** cách nhận ra công ty trong văn bản và gắn đúng mã, kể cả khi tên mơ hồ hoặc viết tắt.
 
-Mỗi bài gồm: thông tin xuất bản, nội dung chính, và điểm liên hệ với pipeline (`call_firm_extractor.py`, `filter_equity_news.py`).
-
 ## Phần 1 – Lọc tin theo công ty (equity / firm-specific news)
 
 Các nghiên cứu đều cho thấy: phần lớn tin có nhắc tên công ty không phải tin về công ty đó. Chỉ khi lọc ra tin mà công ty là chủ thể, mối liên hệ giữa tin và giá cổ phiếu mới hiện rõ.
